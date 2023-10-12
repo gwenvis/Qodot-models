@@ -2,6 +2,8 @@
 class_name QodotFGDModelPointClass
 extends QodotFGDPointClass
 
+@export var scale := 16.0
+
 func build_def_text() -> String:
 	_generate_model()
 	return super()
@@ -31,8 +33,7 @@ func _create_gltf_file(gltf_state: GLTFState, path: String) -> bool:
 	gltf_state.create_animations = false
 
 	var node := scene_file.instantiate() as Node3D
-	#node.position += Vector3(0, -8, 0)
-	node.scale += Vector3(16, 16, 16)
+	node.scale += Vector3(scale, scale, scale)
 
 	gltf_document.append_from_scene(node, gltf_state)
 	if error != OK:
