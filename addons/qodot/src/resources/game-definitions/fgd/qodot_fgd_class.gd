@@ -32,6 +32,8 @@ func build_def_text() -> String:
 
 	# Meta properties
 	var base_str = ""
+	if self.has_method('generate_model'):
+		self.call('generate_model')
 	var meta_props = meta_properties.duplicate()
 
 	for base_class in base_classes:
