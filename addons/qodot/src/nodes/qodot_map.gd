@@ -469,14 +469,16 @@ func build_entity_nodes() -> Array:
 					elif entity_definition.node_class != "":
 						node.queue_free()
 						node = ClassDB.instantiate(entity_definition.node_class)
-					if entity_definition.export_model and 'rotation_degrees' in node:
+					if entity_definition is QodotFGDModelPointClass and 'rotation_degrees' in node:
 						var angles := Vector3(0, -90, 0)
 						if 'angles' in properties or 'mangles' in properties:
-							var angles_raw = (properties['angles'] if 'angles' in properties else properties['mangles']).split(' ')
-							angles = Vector3(angles_raw[2].to_float(), angles_raw[1].to_float() - 90, -angles_raw[0].to_float())
+							var key := 'angles' if 'angles' in properties else 'mangle'
+							var angles_raw = properties[key].split(' ').map(func(s): return float(s))
+							angles += Vector3(angles_raw[2], angles_raw[1], -angles_raw[0])
 						elif 'angle' in properties:
-							var angle_raw = properties['angle']	
-							angles = Vector3(0, angle_raw.to_float() - 90, 0)
+							angles.y += properties['angle']
+							var angle_raw := float(properties['angle'])
+							angles += Vector3(0, angle_raw, 0)
 						node.rotation_degrees = angles
 				if entity_definition.script_class:
 					node.set_script(entity_definition.script_class)
