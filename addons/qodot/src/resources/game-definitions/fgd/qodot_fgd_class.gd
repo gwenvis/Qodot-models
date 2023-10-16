@@ -26,7 +26,7 @@ var prefix: String = ""
 
 @export var transient_node := false
 
-func build_def_text() -> String:
+func build_def_text(options: QodotBuildDefTextOptions = null) -> String:
 	# Class prefix
 	var res : String = prefix
 

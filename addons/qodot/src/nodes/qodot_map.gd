@@ -469,17 +469,22 @@ func build_entity_nodes() -> Array:
 					elif entity_definition.node_class != "":
 						node.queue_free()
 						node = ClassDB.instantiate(entity_definition.node_class)
-					if entity_definition is QodotFGDModelPointClass and 'rotation_degrees' in node:
-						var angles := Vector3(0, -90, 0)
-						if 'angles' in properties or 'mangles' in properties:
+					if entity_definition is QodotFGDModelPointClass and 'rotation_degrees' in node and entity_definition.apply_rotation_on_import:
+						var angles := Vector3(0, 0, 0)
+						if 'angles' in properties or 'mangle' in properties:
 							var key := 'angles' if 'angles' in properties else 'mangle'
-							var angles_raw = properties[key].split(' ').map(func(s): return float(s))
-							angles += Vector3(angles_raw[2], angles_raw[1], -angles_raw[0])
+							var angles_raw = properties[key]
+							if not angles_raw is Array[float]:
+								angles_raw = angles_raw.split_floats(' ')
+							angles = Vector3(angles_raw[0], angles_raw[1], angles_raw[2])
 						elif 'angle' in properties:
-							angles.y += properties['angle']
-							var angle_raw := float(properties['angle'])
-							angles += Vector3(0, angle_raw, 0)
-						node.rotation_degrees = angles
+							var angle = properties['angle']
+							if not angle is float:
+								angle = float(angle)
+							angles.y += angle
+						node.rotation_degrees = (Vector3(angles.y, angles.x, angles.z) if entity_definition.classname.begins_with('light')
+							else Vector3(-angles.x, angles.y, angles.z) if entity_definition.classname == 'info_intermission'
+							else angles)
 				if entity_definition.script_class:
 					node.set_script(entity_definition.script_class)
 		
