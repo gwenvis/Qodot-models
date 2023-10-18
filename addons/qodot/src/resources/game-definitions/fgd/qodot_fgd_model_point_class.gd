@@ -31,10 +31,13 @@ func _set_model():
 	node.queue_free()
 	const model_key := "model"
 	const size_key := "size"
-	meta_properties[model_key] = '{"path": "%s", "scale": %s }' % [
-		_get_local_path(), 
-		scale_expression
-	]
+	if scale_expression.is_empty():
+		meta_properties[model_key] = '"%s"' % _get_local_path()
+	else:
+		meta_properties[model_key] = '{"path": "%s", "scale": %s }' % [
+			_get_local_path(), 
+			scale_expression
+		]
 	if generate_bounding_box:
 		meta_properties[size_key] = _get_bounding_box(gltf_state.meshes)
 
