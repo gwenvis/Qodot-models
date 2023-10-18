@@ -4,37 +4,36 @@ extends QodotFGDPointClass
 
 ## Optional - if empty, will use the game dir provided when exported.
 @export_global_dir var trenchbroom_game_dir = ""
-## Optional - if empty, will use the export dir provided when exported
-@export var model_export_dir := ""
-## Optional - if empty, will use the default scale
+@export var model_export_dir := "trenchbroom/export"
 ## Scale expression applied to model in Trenchbroom. See https://trenchbroom.github.io/manual/latest/#display-models-for-entities for more info.
 @export var scale_expression := ""
 @export var generate_bounding_box := true
 @export var apply_rotation_on_import := true
-func build_def_text(options: QodotBuildDefTextOptions = null) -> String:
-	_generate_model(options)
-	return super(options)
+@export var generate_gd_ignore_file := false
+func build_def_text() -> String:
+	_generate_model()
+	return super()
 
-func _generate_model(options: QodotBuildDefTextOptions):
-	_set_model(options)
+func _generate_model():
+	_set_model()
 
-func _set_model(options: QodotBuildDefTextOptions):
+func _set_model():
 	if not scene_file:
 		return 
 	
 	var gltf_state := GLTFState.new()
-	var path = _get_export_dir(options)
+	var path = _get_export_dir()
 	var node = _get_node()
 	if node == null: return
-	if not _create_gltf_file(gltf_state, path, node, options.create_ignore_files):
+	if not _create_gltf_file(gltf_state, path, node, generate_gd_ignore_file):
 		printerr("could not create gltf file")
 		return
 	node.queue_free()
 	const model_key := "model"
 	const size_key := "size"
 	meta_properties[model_key] = '{"path": "%s", "scale": %s }' % [
-		_get_local_path(options), 
-		options.scale if scale_expression.is_empty() else scale_expression
+		_get_local_path(), 
+		scale_expression
 	]
 	if generate_bounding_box:
 		meta_properties[size_key] = _get_bounding_box(gltf_state.meshes)
@@ -47,13 +46,14 @@ func _get_node() -> Node3D:
 	return null
 
 
-func _get_export_dir(options: QodotBuildDefTextOptions) -> String:
-	var tb_game_dir = options.trenchbroom_project_dir if trenchbroom_game_dir.is_empty() else trenchbroom_game_dir
-	var export_dir = options.model_export_dir if model_export_dir.is_empty() else model_export_dir
+func _get_export_dir() -> String:
+	var tb_game_dir = QodotEditorSettings.get_trenchbroom_project_path() if trenchbroom_game_dir.is_empty() else trenchbroom_game_dir
+	print(tb_game_dir)
+	var export_dir = model_export_dir
 	return tb_game_dir.path_join(export_dir).path_join('%s.glb' % classname)
 
-func _get_local_path(options: QodotBuildDefTextOptions) -> String:
-	var export_dir = options.model_export_dir if model_export_dir.is_empty() else model_export_dir
+func _get_local_path() -> String:
+	var export_dir = model_export_dir
 	return export_dir.path_join('%s.glb' % classname)
 
 func _create_gltf_file(gltf_state: GLTFState, path: String, node: Node3D, create_ignore_files: bool) -> bool:
@@ -61,7 +61,7 @@ func _create_gltf_file(gltf_state: GLTFState, path: String, node: Node3D, create
 	var global_export_path = path
 	var gltf_document := GLTFDocument.new()
 	gltf_state.create_animations = false
-	node.rotate_y(deg_to_rad(90))
+	node.rotate_y(deg_to_rad(-90))
 	gltf_document.append_from_scene(node, gltf_state)
 	if error != OK:
 		printerr("Failed appending to gltf document", error)

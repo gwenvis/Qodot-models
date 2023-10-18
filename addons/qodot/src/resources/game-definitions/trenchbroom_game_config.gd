@@ -33,17 +33,6 @@ extends Resource
 
 ## Scale of textures on new brushes.
 @export var default_uv_scale : Vector2 = Vector2(1, 1)
-
-@export_category("Model Exporter")
-## The "Game Path" that is defined in the Trenchbroom game settings
-## Will use the Godot project if left empty
-@export_global_dir var trenchbroom_project_dir := ""
-## The path relative to the Trenchbroom game folder where models are exported to
-@export var trenchbroom_exported_model_dir := ""
-## Creates a .gdignore and .gitignore file when models exported so they're ignored
-## by Godot and source control
-@export var create_ignore_files_on_export := true
-
 ## Arrays containing the TrenchbroomTag resource type.
 @export_category("Editor hint tags")
 
@@ -202,7 +191,10 @@ func parse_default_uv_scale(texture_scale : Vector2) -> String:
 
 ## Exports or updates a folder in the /games directory, with an icon, .cfg, and all accompanying FGDs.
 func do_export_file():
-	if trenchbroom_games_folder.is_empty():
+	var folder = trenchbroom_games_folder
+	if folder.is_empty():
+		folder = QodotEditorSettings.get_trenchbroom_game_config_path()
+	if folder.is_empty():
 		print("Skipping export: No TrenchBroom games folder")
 		return
 	# Create config folder name by combining games folder with the game name as a directory
@@ -240,12 +232,6 @@ func do_export_file():
 	file.store_string(build_class_text())
 	file = null # Official way to close files in GDscript 2
 	
-	var options = QodotBuildDefTextOptions.new()
-	if not trenchbroom_project_dir.is_empty():
-		options.trenchbroom_project_dir = trenchbroom_games_folder
-	if not trenchbroom_exported_model_dir.is_empty():
-		options.model_export_dir = trenchbroom_exported_model_dir
-	options.create_ignore_files = create_ignore_files_on_export
 	# FGDs
 	for fgd_file in fgd_files:
 		if not fgd_file is QodotFGDFile:
@@ -253,5 +239,5 @@ func do_export_file():
 			continue
 		var export_fgd : QodotFGDFile = fgd_file.duplicate()
 		export_fgd.target_folder = config_folder
-		export_fgd.do_export_file(options)
+		export_fgd.do_export_file()
 	print("Export complete\n")

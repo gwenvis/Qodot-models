@@ -10,8 +10,8 @@ extends Resource
 		return export_file # TODO Converter40 Non existent get function
 	set(new_export_file):
 		if new_export_file != export_file:
-			do_export_file(QodotBuildDefTextOptions.new())
-func do_export_file(options: QodotBuildDefTextOptions):
+			do_export_file()
+func do_export_file():
 	if Engine.is_editor_hint() and get_fgd_classes().size() > 0:
 				if target_folder.is_empty():
 					print("Skipping export: No target folder")
@@ -24,7 +24,7 @@ func do_export_file(options: QodotBuildDefTextOptions):
 
 				print("Exporting FGD to ", fgd_file)
 				var file_obj := FileAccess.open(fgd_file, FileAccess.WRITE)
-				file_obj.store_string(build_class_text(options))
+				file_obj.store_string(build_class_text())
 				file_obj.close()
 @export_global_dir var target_folder : String # (String, DIR, GLOBAL)
 @export var fgd_name: String = "Qodot"
@@ -32,18 +32,18 @@ func do_export_file(options: QodotBuildDefTextOptions):
 @export var entity_definitions: Array[Resource] = [ # (Array, Resource)
 ]
 
-func build_class_text(options: QodotBuildDefTextOptions) -> String:
+func build_class_text() -> String:
 	var res : String = ""
 
 	for base_fgd in base_fgd_files:
-		res += base_fgd.build_class_text(options)
+		res += base_fgd.build_class_text()
 
 	var entities = get_fgd_classes()
 	for ent in entities:
 		if ent.qodot_internal:
 			continue
 		
-		var ent_text = ent.build_def_text(options)
+		var ent_text = ent.build_def_text()
 		res += ent_text
 		if ent != entities[-1]:
 			res += "\n"
